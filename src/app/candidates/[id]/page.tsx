@@ -3,6 +3,7 @@ import { Mail, Phone, Link as LinkIcon, Zap, Download, Users, Home, FileText } f
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { updateCandidateStatus } from './actions';
+import { ScheduleInterviewButton } from './schedule-button';
 import { AvatarImage } from '@/components/ui/avatar-image';
 import { MatrixRadar } from '@/components/ui/matrix-radar';
 import crypto from 'crypto';
@@ -141,11 +142,11 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
               </button>
             </form>
           )}
-          <form action={updateCandidateStatus.bind(null, candidate.id, 'interview scheduled')}>
-            <button type="submit" className="px-5 py-2 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white font-semibold text-xs shadow-md hover:opacity-90 active:scale-95 transition-all outline-none">
-              Schedule Interview
-            </button>
-          </form>
+          <ScheduleInterviewButton 
+            candidateId={candidate.id} 
+            email={email} 
+            candidateName={candidate.candidate_name} 
+          />
         </div>
       </div>
 
