@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-on-surface-variant: #454652;
+  --color-inverse-on-surface: #eff1f3;
+  --color-tertiary-container: #006846;
+  --color-secondary-fixed: #d5e3fc;
+  --color-secondary: #515f74;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-secondary-fixed: #0d1c2e;
+  --color-on-tertiary-container: #5debaf;
+  --color-surface-tint: #4955b3;
+  --color-on-tertiary-fixed-variant: #005236;
+  --color-on-primary: #ffffff;
+  --color-secondary-container: #d5e3fc;
+  --color-outline: #757684;
+  --color-error: #ba1a1a;
+  --color-outline-variant: #c5c5d4;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-inverse-surface: #2d3133;
+  --color-primary: #2b3896;
+  --color-on-tertiary-fixed: #002113;
+  --color-surface-dim: #d8dadc;
+  --color-surface-container-highest: #e0e3e5;
+  --color-inverse-primary: #bcc2ff;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-surface-container-high: #e6e8ea;
+  --color-on-error-container: #93000a;
+  --color-primary-fixed-dim: #bcc2ff;
+  --color-primary-container: #4551af;
+  --color-surface-container: #eceef0;
+  --color-on-secondary-container: #57657a;
+  --color-on-primary-container: #cbcfff;
+  --color-on-error: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-primary-fixed: #dfe0ff;
+  --color-on-primary-fixed: #000c62;
+  --color-on-primary-fixed-variant: #303c9a;
+  --color-tertiary: #004e33;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-variant: #e0e3e5;
+  --color-secondary-fixed-dim: #b9c7df;
+  --color-on-surface: #191c1e;
+  --color-error-container: #ffdad6;
+  --color-on-secondary-fixed-variant: #3a485b;
+  --color-on-secondary: #ffffff;
+  --color-surface: #f7f9fb;
+  
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Nunito", sans-serif;
+  --font-label: "Nunito", sans-serif;
+
+  --animate-fade-in-up: fadeInUp 0.6s ease-out forwards;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    font-family: var(--font-nunito), sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-manrope), sans-serif;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .card-hover {
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  }
 }
