@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, Link as LinkIcon, Zap, Download, Users, Home, FileText } from 'lucide-react';
+import { Mail, Phone, Link as LinkIcon, Zap, Download, Users, Home, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { updateCandidateStatus } from './actions';
@@ -12,15 +12,35 @@ export const dynamic = 'force-dynamic';
 
 export default async function CandidateProfile({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
+  const currentId = parseInt(resolvedParams.id, 10);
+
   const { data: candidate, error } = await supabaseAdmin
     .from('candidate_analysis')
     .select('*')
-    .eq('id', resolvedParams.id)
+    .eq('id', currentId)
     .single();
 
   if (error || !candidate) {
     return notFound();
   }
+
+  // Fetch Previous and Next Candidate IDs for navigation based on creation order/id
+  const { data: prevCandidateArr } = await supabaseAdmin
+    .from('candidate_analysis')
+    .select('id')
+    .lt('id', currentId)
+    .order('id', { ascending: false })
+    .limit(1);
+    
+  const { data: nextCandidateArr } = await supabaseAdmin
+    .from('candidate_analysis')
+    .select('id')
+    .gt('id', currentId)
+    .order('id', { ascending: true })
+    .limit(1);
+
+  const prevCandidateId = prevCandidateArr?.[0]?.id || null;
+  const nextCandidateId = nextCandidateArr?.[0]?.id || null;
 
   let parsedAnalysis: any = {};
   try {
@@ -52,6 +72,7 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
 
   const strengthsList = parseJSONList(candidate.strengths);
   const weaknessesList = parseJSONList(candidate.weaknesses);
+  const languagesList = parseJSONList(parsedAnalysis.languages);
 
   const title = parsedAnalysis.current_title || candidate.current_title || 'Applicant';
   const email = parsedAnalysis.email || candidate.email || 'N/A';
@@ -147,6 +168,28 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
             email={email} 
             candidateName={candidate.candidate_name} 
           />
+
+          <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-4">
+            {prevCandidateId ? (
+              <Link href={`/candidates/${prevCandidateId}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Previous Candidate">
+                <ChevronLeft className="w-4 h-4" />
+              </Link>
+            ) : (
+              <button disabled className="p-2 bg-slate-50 border border-slate-100 text-slate-300 rounded-lg cursor-not-allowed">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            {nextCandidateId ? (
+              <Link href={`/candidates/${nextCandidateId}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Next Candidate">
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <button disabled className="p-2 bg-slate-50 border border-slate-100 text-slate-300 rounded-lg cursor-not-allowed">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -177,6 +220,61 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Language Proficiency */}
+          <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-slate-100/50">
+            <h3 className="text-xs font-bold text-outline uppercase tracking-widest mb-4">Language Proficiency</h3>
+            {languagesList.length > 0 ? (
+              <div className="flex flex-col gap-2.5">
+                {languagesList.map((langItem: any, idx: number) => {
+                  let languageName = '';
+                  let proficiency = '';
+                  
+                  if (typeof langItem === 'string') {
+                    // Try to extract proficiency levels from typical formats e.g. "English (Native)" or "Fluent Spanish"
+                    const kwRegex = /^(Fluent|Native|Professional|Basic|Weak|Intermediate|Advanced|Conversational)\b/i;
+                    const match = langItem.match(kwRegex);
+                    if (match) {
+                      proficiency = match[1];
+                      languageName = langItem.replace(kwRegex, '').trim();
+                    } else if (langItem.includes('(')) {
+                      const parts = langItem.split('(');
+                      languageName = parts[0].trim();
+                      proficiency = parts[1].replace(')', '').trim();
+                    } else if (langItem.includes(':')) {
+                      const parts = langItem.split(':');
+                      languageName = parts[0].trim();
+                      proficiency = parts[1].trim();
+                    } else if (langItem.includes('-')) {
+                      const parts = langItem.split('-');
+                      languageName = parts[0].trim();
+                      proficiency = parts[1].trim();
+                    } else {
+                      languageName = langItem.trim();
+                    }
+                  } else if (typeof langItem === 'object') {
+                    languageName = langItem.language || langItem.name || 'Unknown';
+                    proficiency = langItem.proficiency || langItem.level || langItem.score || '';
+                  }
+
+                  return (
+                    <div key={idx} className="flex items-center justify-between px-3 py-2.5 bg-emerald-50/50 border border-emerald-100/80 rounded-xl shadow-sm">
+                      <span className="text-emerald-900 text-[13px] font-bold capitalize tracking-tight">{languageName}</span>
+                      {proficiency && (
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-white px-2 py-1 rounded-md shadow-[0_2px_4px_rgba(0,0,0,0.02)] ring-1 ring-emerald-200">
+                          {proficiency}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center">
+                <span className="text-slate-400 text-[13px] font-medium italic">Language proficiency not available on resume</span>
+              </div>
+            )}
           </div>
 
           {/* Contact Info */}

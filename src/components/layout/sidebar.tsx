@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Briefcase, Users, BarChart3, Settings } from 'lucide-react';
+import eDataLogo from '@/components/Logo/eData Logo - new - 1x_png.png';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -14,9 +16,11 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 flex flex-col p-6 border-r border-slate-50 hidden lg:flex overflow-y-auto">
-      <div className="mb-10 px-2">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-loose">eData Recruitment Portal</h2>
+    <aside className="w-64 flex flex-col p-6 border-r border-slate-50 hidden lg:flex overflow-y-auto bg-[#fafbfc]">
+      <div className="mb-8 px-2 flex items-center h-12">
+        <Link href="/">
+          <Image src={eDataLogo} alt="eData Logo" className="w-[140px] h-auto" priority />
+        </Link>
       </div>
       <nav className="flex-1 space-y-1">
         {navLinks.map((link) => {
