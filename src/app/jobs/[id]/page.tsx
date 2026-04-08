@@ -3,13 +3,16 @@ import { ArrowLeft, Search, Bell, TrendingUp, Minus, TrendingDown, ChevronRight,
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { SearchBar } from '@/components/ui/search-bar';
+import { PaginationControls } from '@/app/candidates/pagination-controls';
 
 export const dynamic = 'force-dynamic';
 
-export default async function JobLeaderboard({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ q?: string }> }) {
+export default async function JobLeaderboard({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ q?: string, page?: string, limit?: string }> }) {
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
   const query = resolvedSearch?.q?.toLowerCase() || '';
+  const page = Number(resolvedSearch?.page) || 1;
+  const limit = Number(resolvedSearch?.limit) || 20;
   const jobId = parseInt(resolvedParams.id, 10);
   if (isNaN(jobId)) return notFound();
 
@@ -50,6 +53,12 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
       c.recommendation?.toLowerCase().includes(query)
     );
   }
+
+  const totalFiltered = displayCandidates.length;
+  const totalPages = Math.ceil(totalFiltered / limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedCandidates = displayCandidates.slice(startIndex, endIndex);
 
   return (
     <div className="flex flex-col min-h-full">
@@ -113,7 +122,7 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
 
           {/* Candidate Rows */}
           <div className="divide-y divide-slate-50">
-            {displayCandidates.map((candidate, index) => {
+            {paginatedCandidates.map((candidate, index) => {
               let parsedAnalysis: any = {};
               try {
                 if (candidate.structured_resume_analysis) {
@@ -126,7 +135,7 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
               } catch (e) {}
 
               const title = parsedAnalysis.current_title || candidate.current_title || 'Applicant';
-              const rank = index + 1;
+              const rank = startIndex + index + 1;
               const score = Math.round(candidate.overall_score || 0);
               
               // Define tag styles based on the user's manual database status
@@ -187,7 +196,7 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
               );
             })}
             
-            {(!candidates || candidates.length === 0) && (
+            {(!paginatedCandidates || paginatedCandidates.length === 0) && (
               <div className="text-center py-12 text-slate-500 col-span-6 flex items-center justify-center w-full">
                 No candidates have applied for this position yet.
               </div>
@@ -196,44 +205,12 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
 
           {/* Footer Stats & Pagination */}
           <div className="bg-slate-50/50 px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Showing {totalCandidates} candidates</p>
-            <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50" disabled>Previous</button>
-              <div className="flex gap-1.5">
-                <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold shadow-sm">1</span>
-              </div>
-              <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50" disabled>Next</button>
-            </div>
+            <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Showing {paginatedCandidates.length} of {totalFiltered} records</p>
+            <PaginationControls totalPages={totalPages} currentPage={page} currentLimit={limit} totalItems={totalFiltered} />
           </div>
         </div>
 
-        {/* Bento Analysis Section */}
-        {totalCandidates > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h4 className="text-xl font-extrabold text-slate-900 font-headline">AI Talent Density Insight</h4>
-              </div>
-              <p className="text-slate-600 leading-relaxed text-[15px]">
-                The current candidate pool shows an exceptionally high density of specialized knowledge for this role. Based on the {averageScore}% average match, we recommend prioritizing technical deep-dives into their domain expertise during the interview stages.
-              </p>
-            </div>
-            
-            <div className="bg-indigo-600 p-8 rounded-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group">
-              <Users className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700 pointer-events-none" />
-              <div className="relative z-10">
-                <h4 className="text-2xl font-bold font-headline text-white mb-3">Team Fit Matrix</h4>
-                <p className="text-indigo-100 text-sm leading-relaxed font-medium">Cross-reference top candidates with current engineering team dynamics and skill gaps.</p>
-              </div>
-              <button className="relative z-10 mt-8 flex items-center justify-center gap-2 text-sm font-bold bg-white text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-xl transition-all shadow-lg active:scale-95">
-                View Full Analysis <ExternalLink className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+
 
       </div>
 

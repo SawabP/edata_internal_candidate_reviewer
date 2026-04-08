@@ -12,7 +12,7 @@ interface MatrixData {
 export function MatrixRadar({ matrices }: { matrices: MatrixData[] }) {
   // Map and truncate long names for the Axis labels so it doesn't overlap excessively 
   const data = matrices.map(m => ({
-    subject: m.name.length > 25 ? m.name.substring(0, 22) + '...' : m.name,
+    subject: m.name,
     originalName: m.name,
     Benchmark: m.benchmark,
     Candidate: m.score,
@@ -78,7 +78,7 @@ export function MatrixRadar({ matrices }: { matrices: MatrixData[] }) {
 
           return (
             <div className="bg-white p-4 rounded-xl shadow-xl shadow-slate-200/50 border border-slate-100 text-sm text-slate-600 flex flex-col gap-1.5 z-50 relative pointer-events-none min-w-[200px]">
-              <strong className="text-slate-900 mb-1 block truncate">{index}</strong>
+              <strong className="text-slate-900 mb-1 block">{index}</strong>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
                 <span className="font-semibold">Candidate: <span className="font-black text-emerald-700">{getVal('Candidate')}</span></span>

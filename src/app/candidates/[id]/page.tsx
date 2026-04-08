@@ -193,9 +193,13 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <LinkIcon className="text-primary w-5 h-5 shrink-0" />
-                <a className="text-primary hover:underline font-medium break-all" href={parsedAnalysis.linkedin_url || '#'}>
-                  {parsedAnalysis.linkedin_url ? 'LinkedIn Profile' : 'No link available'}
-                </a>
+                {linkedinUrl ? (
+                  <a className="text-primary hover:underline font-medium break-all" href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`} target="_blank" rel="noopener noreferrer">
+                    LinkedIn Profile
+                  </a>
+                ) : (
+                  <span className="text-slate-400 font-medium">No link available</span>
+                )}
               </div>
             </div>
           </div>

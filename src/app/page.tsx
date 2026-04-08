@@ -64,7 +64,6 @@ export default async function Dashboard() {
             <div className="p-3.5 bg-primary/5 text-primary rounded-xl group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
               <Briefcase className="w-6 h-6" />
             </div>
-            <span className="text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded-lg">+4 new</span>
           </div>
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Jobs</p>
           <div className="flex items-baseline gap-3">
@@ -84,7 +83,6 @@ export default async function Dashboard() {
             <div className="p-3.5 bg-secondary-container/30 text-secondary rounded-xl">
               <Users className="w-6 h-6" />
             </div>
-            <span className="text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded-lg">+12</span>
           </div>
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Talent Database</p>
           <h3 className="text-4xl font-extrabold text-slate-900">{totalApplicants || 1842}</h3>
@@ -99,7 +97,6 @@ export default async function Dashboard() {
             <div className="p-3.5 bg-tertiary-fixed/20 text-tertiary rounded-xl">
               <Calendar className="w-6 h-6" />
             </div>
-            <span className="text-primary font-bold text-xs bg-primary/5 px-2.5 py-1 rounded-lg">Today: 4</span>
           </div>
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Interviews Scheduled</p>
           <h3 className="text-4xl font-extrabold text-slate-900">{interviewsCount || 0}</h3>

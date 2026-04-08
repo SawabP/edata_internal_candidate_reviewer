@@ -2,12 +2,15 @@ import Link from 'next/link';
 import { ArrowLeft, Search, TrendingUp, TrendingDown, ChevronRight, Users } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { SearchBar } from '@/components/ui/search-bar';
+import { PaginationControls } from './pagination-controls';
 
 export const dynamic = 'force-dynamic';
 
-export default async function GlobalCandidatesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function GlobalCandidatesPage({ searchParams }: { searchParams: Promise<{ q?: string, page?: string, limit?: string }> }) {
   const resolvedSearch = await searchParams;
   const query = resolvedSearch?.q?.toLowerCase() || '';
+  const page = Number(resolvedSearch?.page) || 1;
+  const limit = Number(resolvedSearch?.limit) || 20;
 
   // Fetch all candidates globally
   const { data: candidates } = await supabaseAdmin
@@ -28,6 +31,12 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
       c.recommendation?.toLowerCase().includes(query)
     );
   }
+
+  const totalFiltered = displayCandidates.length;
+  const totalPages = Math.ceil(totalFiltered / limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedCandidates = displayCandidates.slice(startIndex, endIndex);
 
   const totalCandidates = candidates?.length || 0;
 
@@ -73,7 +82,7 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
           </div>
 
           <div className="divide-y divide-slate-50">
-            {displayCandidates.map((candidate, index) => {
+            {paginatedCandidates.map((candidate, index) => {
               let parsedAnalysis: any = {};
               try {
                 if (candidate.structured_resume_analysis) {
@@ -86,7 +95,7 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
               } catch (e) {}
 
               const title = parsedAnalysis.current_title || candidate.current_title || 'Applicant';
-              const rank = index + 1;
+              const rank = startIndex + index + 1;
               const score = Math.round(candidate.overall_score || 0);
               
               const rawStatus = candidate.status || 'In Review';
@@ -149,7 +158,7 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
               );
             })}
             
-            {(!displayCandidates || displayCandidates.length === 0) && (
+            {(!paginatedCandidates || paginatedCandidates.length === 0) && (
               <div className="text-center py-12 text-slate-500 col-span-6 flex flex-col items-center justify-center w-full">
                 <Search className="w-8 h-8 text-slate-300 mb-3" />
                 No candidates found matching '{query}'.
@@ -160,8 +169,9 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
           </div>
           
           {/* Footer Stats & Pagination */}
-          <div className="bg-slate-50/50 px-8 py-5 flex justify-between items-center gap-4 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Showing {displayCandidates.length} records</p>
+          <div className="bg-slate-50/50 px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-slate-100">
+            <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Showing {paginatedCandidates.length} of {totalFiltered} records</p>
+            <PaginationControls totalPages={totalPages} currentPage={page} currentLimit={limit} totalItems={totalFiltered} />
           </div>
         </div>
       </div>
