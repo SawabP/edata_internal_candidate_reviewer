@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, Link as LinkIcon, Zap, Download, Users, Home, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, Phone, Link as LinkIcon, Zap, Download, Users, Home, FileText, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { updateCandidateStatus } from './actions';
@@ -10,9 +10,34 @@ import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CandidateProfile({ params }: { params: Promise<{ id: string }> }) {
+export default async function CandidateProfile({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<Record<string, string>> }) {
   const resolvedParams = await params;
+  const resolvedSearch = await searchParams;
   const currentId = parseInt(resolvedParams.id, 10);
+  
+  const fromJob = resolvedSearch?.from === 'job';
+  const fromCandidates = resolvedSearch?.from === 'candidates';
+  const sourceJobId = resolvedSearch?.jobId;
+  
+  let backUrl = '/candidates';
+  if (fromJob && sourceJobId) {
+    backUrl = `/jobs/${sourceJobId}`;
+    const qParts = [];
+    if (resolvedSearch?.jobPage) qParts.push(`page=${resolvedSearch.jobPage}`);
+    if (resolvedSearch?.jobLimit) qParts.push(`limit=${resolvedSearch.jobLimit}`);
+    if (qParts.length > 0) backUrl += `?${qParts.join('&')}`;
+  } else if (fromCandidates || resolvedSearch?.page) {
+    const qParts = [];
+    if (resolvedSearch?.page) qParts.push(`page=${resolvedSearch.page}`);
+    if (resolvedSearch?.limit) qParts.push(`limit=${resolvedSearch.limit}`);
+    if (qParts.length > 0) backUrl += `?${qParts.join('&')}`;
+  }
+
+  let contextQuery = '';
+  const searchEntries = Object.entries(resolvedSearch || {});
+  if (searchEntries.length > 0) {
+    contextQuery = '?' + searchEntries.map(([k, v]) => `${k}=${v}`).join('&');
+  }
 
   const { data: candidate, error } = await supabaseAdmin
     .from('candidate_analysis')
@@ -124,18 +149,10 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
       {/* Breadcrumbs & Actions */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
         <div>
-          <nav className="flex items-center text-[10px] text-outline mb-1.5 uppercase tracking-wider font-semibold">
-            <Link href="/" className="flex items-center hover:text-primary transition-colors">
-              <Home className="w-3 h-3 mr-1" />
-              Home
-            </Link>
-            <span className="mx-2">/</span>
-            <Link href="/candidates" className="hover:text-primary transition-colors">
-              Candidates
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-on-surface capitalize">{candidate.candidate_name.toLowerCase()}</span>
-          </nav>
+          <Link href={backUrl} className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary transition-colors mb-3">
+            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            {fromJob ? "Back to Job" : "Back to Candidates"}
+          </Link>
           <h1 className="text-2xl font-extrabold text-on-surface tracking-tight capitalize">{candidate.candidate_name.toLowerCase()}</h1>
           <p className="text-on-surface-variant text-sm flex flex-wrap items-center gap-2 mt-1 leading-snug">
             <span>{location}</span>
@@ -171,7 +188,7 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
 
           <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-4">
             {prevCandidateId ? (
-              <Link href={`/candidates/${prevCandidateId}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Previous Candidate">
+              <Link href={`/candidates/${prevCandidateId}${contextQuery}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Previous Candidate">
                 <ChevronLeft className="w-4 h-4" />
               </Link>
             ) : (
@@ -181,7 +198,7 @@ export default async function CandidateProfile({ params }: { params: Promise<{ i
             )}
 
             {nextCandidateId ? (
-              <Link href={`/candidates/${nextCandidateId}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Next Candidate">
+              <Link href={`/candidates/${nextCandidateId}${contextQuery}`} className="p-2 bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 hover:text-primary transition-colors" title="Next Candidate">
                 <ChevronRight className="w-4 h-4" />
               </Link>
             ) : (

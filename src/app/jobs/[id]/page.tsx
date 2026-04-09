@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, Search, Bell, TrendingUp, Minus, TrendingDown, ChevronRight, Users, ExternalLink, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Search, Bell, TrendingUp, Minus, TrendingDown, ChevronRight, Users, ExternalLink, Plus, Sparkles, Info } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { SearchBar } from '@/components/ui/search-bar';
@@ -91,8 +91,16 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
           </div>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <h2 className="text-4xl font-extrabold text-slate-900 font-headline mb-2 tracking-tight">{job.job_title}</h2>
-              <p className="text-slate-500 font-medium line-clamp-1">{job.job_description || 'Remote / GCC'}</p>
+              <div className="flex items-center gap-3">
+                <h2 className="text-4xl font-extrabold text-slate-900 font-headline tracking-tight">{job.job_title}</h2>
+                <div className="relative group cursor-help flex items-center">
+                  <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors" />
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[300px] bg-slate-900 text-white text-[13px] leading-relaxed font-medium p-4 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                    {job.job_description || 'Remote / GCC'}
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full border-4 border-transparent border-b-slate-900"></div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-8 bg-white p-4 rounded-xl shadow-sm border border-slate-100 shrink-0">
               <div className="flex flex-col items-center">
@@ -152,7 +160,7 @@ export default async function JobLeaderboard({ params, searchParams }: { params:
               if (isPositive) tagBg = 'bg-emerald-50 text-emerald-700 border-emerald-100';
 
               return (
-                <Link key={candidate.id} href={`/candidates/${candidate.id}`} className="grid grid-cols-[60px_3fr_1.2fr_1.2fr_2.5fr_80px] gap-4 px-8 py-5 items-center hover:bg-slate-50/80 transition-all duration-300 group block">
+                <Link key={candidate.id} href={`/candidates/${candidate.id}?from=job&jobId=${jobId}&jobPage=${page}&jobLimit=${limit}`} className="grid grid-cols-[60px_3fr_1.2fr_1.2fr_2.5fr_80px] gap-4 px-8 py-5 items-center hover:bg-slate-50/80 transition-all duration-300 group block">
                   <div className="flex justify-center">
                     <span className={`w-7 h-7 rounded-full ${rank === 1 ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-200' : rank <= 3 ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'bg-slate-50 text-slate-500 ring-1 ring-slate-200'} flex items-center justify-center font-bold text-xs shadow-sm`}>
                       {rank}

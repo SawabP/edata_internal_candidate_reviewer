@@ -113,7 +113,7 @@ export default async function GlobalCandidatesPage({ searchParams }: { searchPar
               const targetJob = jobMap.get(candidate.job_id) || `Requisition #${candidate.job_id}`;
 
               return (
-                <Link key={candidate.id} href={`/candidates/${candidate.id}`} className="grid grid-cols-[60px_2.5fr_2fr_1.2fr_1fr_2fr_80px] gap-4 px-8 py-5 items-center hover:bg-slate-50/80 transition-all duration-300 group block">
+                <Link key={candidate.id} href={`/candidates/${candidate.id}?from=candidates&page=${page}&limit=${limit}`} className="grid grid-cols-[60px_2.5fr_2fr_1.2fr_1fr_2fr_80px] gap-4 px-8 py-5 items-center hover:bg-slate-50/80 transition-all duration-300 group block">
                   <div className="flex justify-center">
                     <span className="bg-slate-50 text-slate-400 rounded-lg px-2 py-1 font-bold text-xs ring-1 ring-slate-200 shadow-sm">
                       {rank}
